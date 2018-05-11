@@ -25,6 +25,10 @@ echo
 
 stdlib=`ocamlc -where`
 
+# This slightly strange looking command will prefer c_compiler for versions
+# of OCaml which have it, but will fallback to bytecode_c_compiler otherwise
+CC=${CC:-`ocamlc -config | tr -d '\r' | sed -ne 's/.*c_compiler: //p' | head -n 1`}
+
 hasgot() {
   rm -f hasgot.c
   (echo "#include <$2>"
@@ -36,7 +40,7 @@ hasgot() {
    fi
    echo '  return 0;'
    echo '}') > hasgot.c
-  ${CC:-cc} $1 -o hasgot.exe hasgot.c $3 2>/dev/null
+  $CC $1 -o hasgot.exe hasgot.c $3 2>/dev/null
   res=$?
   rm -f hasgot.c hasgot.exe
   return $res
@@ -89,4 +93,3 @@ echo "OCAML_STDLIB=$stdlib" > Makefile.config
 echo "DBM_INCLUDES=$dbm_include" >> Makefile.config
 echo "DBM_LINK=$dbm_link" >> Makefile.config
 echo "DBM_DEFINES=$dbm_defines" >> Makefile.config
-
